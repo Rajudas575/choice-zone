@@ -1,6 +1,6 @@
 import { Card, Divider } from "@mui/material";
 import React from "react";
-import TransactionTable from "../Transaction/transactionTable";
+import TransactionTable from "../Transaction/TransactionTable";
 
 const Payment = () => {
   return (
