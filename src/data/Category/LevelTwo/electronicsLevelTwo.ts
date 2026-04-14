@@ -1,0 +1,58 @@
+export const electronicsLevelTwo = [
+  {
+    name: "Mobiles",
+    categoryId: "mobiles",
+    parentCategoryId: "electronics",
+    parentCategoryName: "Electronics",
+    level: 2,
+  },
+  {
+    name: "Mobile Accessories",
+    categoryId: "mobiles_accessories",
+    parentCategoryId: "electronics",
+    parentCategoryName: "Electronics",
+    level: 2,
+  },
+  {
+    name: "Smart Wearable Tech",
+    categoryId: "smart_wearable_tech",
+    parentCategoryId: "electronics",
+    parentCategoryName: "Electronics",
+    level: 2,
+  },
+  {
+    name: "Laptops",
+    categoryId: "laptops",
+    parentCategoryId: "electronics",
+    parentCategoryName: "Electronics",
+    level: 2,
+  },
+  {
+    name: "Tablets",
+    categoryId: "tablets",
+    parentCategoryId: "electronics",
+    parentCategoryName: "Electronics",
+    level: 2,
+  },
+  {
+    name: "Speakers",
+    categoryId: "speakers",
+    parentCategoryId: "electronics",
+    parentCategoryName: "Electronics",
+    level: 2,
+  },
+  {
+    name: "Televisions",
+    categoryId: "televisions",
+    parentCategoryId: "electronics",
+    parentCategoryName: "Electronics",
+    level: 2,
+  },
+  {
+    name: "Camera",
+    categoryId: "camera",
+    parentCategoryId: "electronics",
+    parentCategoryName: "Electronics",
+    level: 2,
+  },
+];

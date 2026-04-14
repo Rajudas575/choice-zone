@@ -1,0 +1,18 @@
+import React from "react";
+
+const HomeCategoryCard = ({item}:any) => {
+  return (
+    <div className="flex gap-3 flex-col justify-center items-center group cursor-pointer">
+      <div className="custo-border w-[150px] lg:w-[249px] h-[150px] lg:h-[249px] rounded-full bg-yellow-400">
+        <img
+          className="group-hover:scale-95 transition-transform transform duration-700 object-cover object-top h-full w-full rounded-full"
+          src={item.image}
+          alt=""
+        />
+      </div>
+      <h1 className="font-medium">{item.name}</h1>
+    </div>
+  );
+};
+
+export default HomeCategoryCard;
