@@ -11,6 +11,11 @@ import AddressCard from "./AddressCard";
 import { Add } from "@mui/icons-material";
 import AddressForm from "./AddressForm";
 import PricingCard from "../Cart/PricingCard";
+import {
+  useAppDispatch,
+  useAppSelector,
+} from "../../../tempReduxToolkit/store";
+import { createOrder } from "../../../tempReduxToolkit/features/customer/orderSlice";
 
 const style = {
   position: "absolute",
@@ -23,12 +28,31 @@ const style = {
   p: 4,
 };
 
-const paymentGatewayList = [{ name: "RAZORPAY" }, { name: "STRIPE" }];
+const paymentGatwayList = [
+  {
+    value: "RAZORPAY",
+    image:
+      "https://razorpay.com/newsroom-content/uploads/2020/12/output-onlinepngtools-1-1.png",
+    label: "Razarpay",
+  },
+  {
+    value: "STRIPE",
+    image: "/stripe_logo.png",
+    label: "Stripe",
+  },
+];
+
+// const paymentGatwayList = [{ name: "RAZORPAY" }, { name: "STRIPE" }];
 
 const CheckOut = () => {
   const [selectedAddress, setSelectedAddress] = useState(0);
-  const [paymentGateWay, setPaymentGateWay] = useState(
-    paymentGatewayList[0].name,
+  // const [paymentGateWay, setPaymentGateWay] = useState(
+  //   paymentGatwayList[0].name,
+  // );
+  const dispatch = useAppDispatch();
+  const { user } = useAppSelector((store) => store);
+  const [paymentGateway, setPaymentGateway] = useState(
+    paymentGatwayList[0].value,
   );
 
   const [open, setOpen] = React.useState(false);
@@ -37,8 +61,23 @@ const CheckOut = () => {
 
   const handleChange = (e: any) => setSelectedAddress(e.target.value);
 
-  const handleChangePaymentGateWay = (e: any) => {
-    setPaymentGateWay(e.target.value);
+  // const handleChangePaymentGateWay = (e: any) => {
+  //   setPaymentGateWay(e.target.value);
+  // };
+
+  const handleCreateOrder = () => {
+    if (user.user?.addresses)
+      dispatch(
+        createOrder({
+          paymentGateway,
+          address: user.user?.addresses[value],
+          jwt: localStorage.getItem("jwt") || "",
+        }),
+      );
+  };
+
+  const handlePaymentChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setPaymentGateway((event.target as HTMLInputElement).value);
   };
 
   return (
@@ -80,14 +119,22 @@ const CheckOut = () => {
               row
               aria-labelledby="demo-row-radio-buttons-group-label"
               name="row-radio-buttons-group"
-              value={paymentGateWay}
-              onChange={handleChangePaymentGateWay}>
-              {paymentGatewayList.map((item, index) => (
+              value={paymentGateway}
+              onChange={handlePaymentChange}>
+              {paymentGatwayList.map((item) => (
                 <FormControlLabel
-                  key={index}
-                  value={item.name}
+                  className={`border w-[45%] flex justify-center rounded-md pr-2 ${paymentGateway === item.value ? "border-primary-color" : ""}`}
+                  value={item.value}
                   control={<Radio />}
-                  label={item.name}
+                  label={
+                    <div>
+                      <img
+                        className={`${item.value == "stripe" ? "w-14" : ""} object-cover`}
+                        src={item.image}
+                        alt={item.label}
+                      />
+                    </div>
+                  }
                 />
               ))}
             </RadioGroup>
@@ -95,7 +142,11 @@ const CheckOut = () => {
           <section className="border border-gray-300 rounded-md">
             <PricingCard />
             <div className="p-5">
-              <Button variant="contained" fullWidth sx={{ py: "11px" }}>
+              <Button
+                onClick={handleCreateOrder}
+                variant="contained"
+                fullWidth
+                sx={{ py: "11px" }}>
                 Checkout
               </Button>
             </div>
@@ -109,7 +160,10 @@ const CheckOut = () => {
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description">
         <Box sx={style}>
-          <AddressForm paymentGateWay={paymentGateWay}/>
+          <AddressForm
+            paymentGateWay={paymentGateway}
+            handleClose={handleClose}
+          />
         </Box>
       </Modal>
     </div>

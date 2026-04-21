@@ -1,5 +1,6 @@
 import { createAsyncThunk, createSlice, current } from "@reduxjs/toolkit";
 import { api } from "../../../config/api";
+import { type Address } from "../../../types/userTypes";
 
 const initialState = {
   orders: [],
@@ -50,9 +51,12 @@ export const fetchOrderById = createAsyncThunk<any, any>(
   },
 );
 
-export const createOrder = createAsyncThunk<any, any>(
+export const createOrder = createAsyncThunk<
+  any,
+  { address: Address; jwt: string; paymentGateway: string }
+>(
   "/orders/createOrder",
-  async ({ address, jwt, paymentGateWay }, { rejectWithValue }) => {
+  async ({ address, jwt, paymentGateway }, { rejectWithValue }) => {
     try {
       const response = await api.post(
         `${API_URL}`,
@@ -63,7 +67,7 @@ export const createOrder = createAsyncThunk<any, any>(
           headers: {
             Authorization: `Bearer ${jwt}`,
           },
-          params: { paymentMethod: paymentGateWay },
+          params: { paymentMethod: paymentGateway },
         },
       );
       // console.log("create order ", response.data);

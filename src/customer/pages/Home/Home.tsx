@@ -31,7 +31,7 @@ const Home = () => {
       <section className="lg:px-20 relative h-[200px] lg:h-auto object-cover">
         <img
           style={{ height: "500px", borderRadius: "8px" }}
-          src="https://res.cloudinary.com/ds4zgf8p4/image/upload/q_auto/f_auto/v1776155278/seller_bg_v1vnjx.png"
+          src="https://res.cloudinary.com/ds4zgf8p4/image/upload/v1776785583/seller_bg_1275X399_nddltv.png"
           alt=""
         />
         <div className="absolute top-1/2 left-4 lg:left-[15rem] transform-translate-y-1/2 font-semibold lg:text-4xl space-y-3">
