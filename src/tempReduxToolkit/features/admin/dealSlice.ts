@@ -38,7 +38,7 @@ export const getAllDeals = createAsyncThunk(
           Authorization: `Bearer ${localStorage.getItem("jwt")}`,
         },
       });
-      console.log("get all deal", response.data);
+      // console.log("get all deal", response.data);
       return response.data;
     } catch (error: any) {
       console.log("error ", error.response);

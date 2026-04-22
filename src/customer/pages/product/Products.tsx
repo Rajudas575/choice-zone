@@ -1,99 +1,162 @@
 import React, { useEffect, useState } from "react";
+import ProductCard from "./ProductCard";
 import FilterSection from "./FilterSection";
 import {
+  Box,
   Divider,
   FormControl,
+  IconButton,
   InputLabel,
   MenuItem,
   Pagination,
   Select,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
-import ProductCard from "./ProductCard";
 import { useParams, useSearchParams } from "react-router";
 import store, {
   useAppDispatch,
   useAppSelector,
 } from "../../../tempReduxToolkit/store";
 import { getAllProducts } from "../../../tempReduxToolkit/features/customer/ProductSlice";
+import FilterAltIcon from "@mui/icons-material/FilterAlt";
 
-const product = {
-  images: [
-    "https://m.media-amazon.com/images/I/71H8pZW--fL._SY679_.jpg",
-    "https://m.media-amazon.com/images/I/71tEKOefGFL._SY679_.jpg",
-    "https://m.media-amazon.com/images/I/71X1S3JlxwL._SY679_.jpg",
-    "https://m.media-amazon.com/images/I/71gz330Lw9L._SY679_.jpg",
-    "https://m.media-amazon.com/images/I/71bCDntfhKL._SY679_.jpg",
-  ],
-  seller: {
-    businessDetails: {
-      businessName: "Banarasi Silk",
-    },
-  },
-};
+// const product = {
+//   images: [
+//     "https://m.media-amazon.com/images/I/71H8pZW--fL._SY679_.jpg",
+//     "https://m.media-amazon.com/images/I/71tEKOefGFL._SY679_.jpg",
+//     "https://m.media-amazon.com/images/I/71X1S3JlxwL._SY679_.jpg",
+//     "https://m.media-amazon.com/images/I/71gz330Lw9L._SY679_.jpg",
+//     "https://m.media-amazon.com/images/I/71bCDntfhKL._SY679_.jpg",
+//   ],
+//   seller: {
+//     businessDetails: {
+//       businessName: "Banarasi Silk",
+//     },
+//   },
+// };
 
 const Products = () => {
   const [sort, setSort] = useState("price_low");
-
+  const theme = useTheme();
+  const isLarge = useMediaQuery(theme.breakpoints.up("lg"));
+  const [showFilter, setShowFilter] = useState(false);
   const { categoryId } = useParams();
-  const [searchParams] = useSearchParams();
-  const product = useAppSelector((store) => store.product);
-
   const dispatch = useAppDispatch();
-  // console.log("PRODUCT---", product);
-  // console.log("category id", categoryId, product);
+  const products = useAppSelector((store) => store.product);
+  const [searchParams] = useSearchParams();
+  const [page, setPage] = useState(1);
+
 
   const handleSortProduct = (e: any) => {
     setSort(e.target.value);
   };
 
+  const handleShowFilter = () => {
+    setShowFilter((prev) => !prev);
+    console.log("showFilter   ", showFilter);
+  };
+
+  const handlePageChange = (value: any) => {
+    setPage(value);
+    console.log("page nummmberr ", value);
+  };
+
   useEffect(() => {
-    dispatch(getAllProducts({}));
-  }, []);
+    const [minPrice, maxPrice] = searchParams.get("price")?.split("-") || [];
+    const newFilters = {
+      brand: searchParams.get("brand") || "",
+      color: searchParams.get("color") || "",
+      minPrice: minPrice ? Number(minPrice) : undefined,
+      maxPrice: maxPrice ? Number(maxPrice) : undefined,
+      pageNumber: page - 1,
+      minDiscount: searchParams.get("discount")
+        ? Number(searchParams.get("discount"))
+        : undefined,
+    };
+    dispatch(getAllProducts({ category: categoryId, sort, ...newFilters }));
+  }, [searchParams, categoryId, sort, page]);
   return (
-    <div className="z-1 mt-10">
-      <div>
-        <h1 className="text-3xl text-center font-bold text-gray-700 pb-5 uppercase space-x-2">
-          {" "}
-          WOMEN SAREES
+    <div className="-z-10 mt-10">
+      <div className="">
+        <h1 className="text-3xl text-center font-bold text-gray-700 pb-5 px-9 uppercase space-x-2">
+          {categoryId?.split("_").map((item) => (
+            <span>{item}</span>
+          ))}
         </h1>
       </div>
       <div className="lg:flex">
-        <section className="z-1 hidden lg:block w-[20%] min-h-screen border-gray-300">
+        <section className="hidden lg:block  w-[20%] ">
           <FilterSection />
         </section>
-        <section className="z-1 w-full lg:w-[80%] space-y-5">
+        <div className="w-full lg:w-[80%] space-y-5">
           <div className="flex justify-between items-center px-9 h-[40px]">
-            <div></div>
-            <FormControl>
-              <InputLabel id="demo-simple-select-label">Sort</InputLabel>
+            <div className="relative w-[50%]">
+              {!isLarge && (
+                <IconButton onClick={handleShowFilter}>
+                  <FilterAltIcon />
+                </IconButton>
+              )}
+              {showFilter && !isLarge && (
+                <Box sx={{ zIndex: 3 }} className="absolute top-[60px]">
+                  <FilterSection />
+                </Box>
+              )}
+            </div>
+            <FormControl size="small" sx={{ width: "200px" }}>
+              <InputLabel id="sort">Sort</InputLabel>
               <Select
                 labelId="sort"
                 id="sort"
                 value={sort}
                 label="Sort"
-                onChange={handleSortProduct}>
-                <MenuItem value={"price_low"}>Price: Low - High</MenuItem>
-                <MenuItem value={"price_high"}>Price: High - Low </MenuItem>
+                onChange={handleSortProduct}
+              >
+                <MenuItem value={"price_low"}>Price : Low - High</MenuItem>
+                <MenuItem value={"price_high"}>Price : High - Low</MenuItem>
               </Select>
             </FormControl>
           </div>
-
           <Divider />
 
-          <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-y-5 px-5 justify-center mt-5 cursor-pointer">
-            {product?.products?.map((item, index) => (
-              <div key={index * 3}>
-                <ProductCard item={item} />
-              </div>
-            ))}
-          </div>
-          <div className="flex flex-col items-center justify-center">
+          {products.products?.length > 0 ? (
+            <section className="grid sm:grid-cols-2 md:grid-cols-3 
+            lg:grid-cols-4
+            gap-y-5 px-5 justify-center">
+              {products.products.map((item: any) => (
+                <div key={item._id} className="">
+                  <ProductCard item={item} categoryId={categoryId} />
+                </div>
+              ))}
+            </section>
+          ) : (
+            <section className="items-center flex flex-col gap-5 justify-center h-[67vh] border">
+              <img
+                className="w-80"
+                src="https://cdn.pixabay.com/photo/2022/05/28/10/45/oops-7227010_960_720.png"
+                alt=""
+              />
+              <h1 className="font-bold text-xl text-center flex items-center gap-2">
+                Product Not Found For{" "}
+                <p className="text-primary-color flex gap-2 uppercase">
+                  {" "}
+                  {categoryId?.split("_").map((item) => (
+                    <span>{item}</span>
+                  ))}{" "}
+                </p>{" "}
+              </h1>
+            </section>
+          )}
+          <div className="flex justify-center pt-10">
             <Pagination
-              count={product.totalPages}
-              style={{ marginBottom: "5px" }}
+              page={page}
+              onChange={(e, value) => handlePageChange(value)}
+              color="primary"
+              count={products?.totalPages}
+              shape="rounded"
             />
           </div>
-        </section>
+        </div>
       </div>
     </div>
   );

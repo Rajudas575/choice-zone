@@ -7,7 +7,7 @@ export const createHomeCategories = createAsyncThunk<any, any>(
    
     try {
       const response = await api.post("/home/categories", homeCategories);
-      console.log("home categories ", response.data);
+      // console.log("home categories ", response.data);
       return response.data;
     } catch (error: any) {
       // Handle the error and return it to be used in rejected action

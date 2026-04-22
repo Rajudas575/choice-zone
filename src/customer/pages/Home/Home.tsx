@@ -28,9 +28,10 @@ const Home = () => {
         </h1>
         <HomeCategory />
       </section>
-      <section className="lg:px-20 relative h-[200px] lg:h-auto object-cover">
+      <section className="lg:px-20 relative h-[200px] lg:h-auto object-cover ">
         <img
           style={{ height: "500px", borderRadius: "8px" }}
+          className="sm:h-[100px]"
           src="https://res.cloudinary.com/ds4zgf8p4/image/upload/v1776785583/seller_bg_1275X399_nddltv.png"
           alt=""
         />

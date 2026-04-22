@@ -43,6 +43,7 @@ const store = configureStore({
 
 export type AddDispath = typeof store.dispatch;
 export type RootReducer = ReturnType<typeof rootReducer>;
+export type RootState = ReturnType<typeof rootReducer>;
 
 export const useAppDispatch = () => useDispatch<AddDispath>();
 
