@@ -18,8 +18,8 @@ import { useParams, useSearchParams } from "react-router";
 import store, {
   useAppDispatch,
   useAppSelector,
-} from "../../../Redux Toolkit/store";
-import { getAllProducts } from "../../../Redux Toolkit/features/customer/ProductSlice";
+} from "../../../tempReduxToolkit/store";
+import { getAllProducts } from "../../../tempReduxToolkit/features/customer/ProductSlice";
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
 
 // const product = {

@@ -20,7 +20,7 @@ import "./Navbar.css";
 import { mainCategory } from "../../data/Category/mainCategory";
 import CategorySheet from "./CategorySheet";
 import { useNavigate } from "react-router";
-import { useAppSelector } from "../../Redux Toolkit/store";
+import { useAppSelector } from "../../tempReduxToolkit/store";
 import DrawerList from "./DrawerList";
 
 const Navbar = () => {
