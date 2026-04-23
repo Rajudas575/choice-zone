@@ -15,7 +15,7 @@ const DrawerList = ({toggleDrawer}:any) => {
       <ListItem>
         <ListItemButton>
 
-          <ListItemText primary={<h1 className='logo text-2xl text-[#00927c]'>Choice Zone</h1>} />
+          <ListItemText primary={<h1 className='logo text-2xl text-[#004e98]'>Choice Zone</h1>} />
         </ListItemButton>
       </ListItem>
       <Divider />

@@ -1,24 +1,25 @@
 import React, { useEffect, useState } from "react";
-import ProductCard from "./ProductCard";
 import FilterSection from "./FilterSection";
 import {
-  Box,
   Divider,
   FormControl,
   IconButton,
   InputLabel,
   MenuItem,
   Pagination,
-  Select,
+  type SelectChangeEvent,
   useMediaQuery,
   useTheme,
+  Select,
+  Box,
 } from "@mui/material";
+import ProductCard from "./ProductCard";
 import { useParams, useSearchParams } from "react-router";
 import store, {
   useAppDispatch,
   useAppSelector,
-} from "../../../tempReduxToolkit/store";
-import { getAllProducts } from "../../../tempReduxToolkit/features/customer/ProductSlice";
+} from "../../../Redux Toolkit/store";
+import { getAllProducts } from "../../../Redux Toolkit/features/customer/ProductSlice";
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
 
 // const product = {
@@ -37,19 +38,18 @@ import FilterAltIcon from "@mui/icons-material/FilterAlt";
 // };
 
 const Products = () => {
-  const [sort, setSort] = useState("price_low");
+  const [sort, setSort] = React.useState("");
   const theme = useTheme();
   const isLarge = useMediaQuery(theme.breakpoints.up("lg"));
   const [showFilter, setShowFilter] = useState(false);
   const { categoryId } = useParams();
   const dispatch = useAppDispatch();
-  const products = useAppSelector((store) => store.product);
+  const { products } = useAppSelector((store) => store);
   const [searchParams] = useSearchParams();
   const [page, setPage] = useState(1);
 
-
-  const handleSortProduct = (e: any) => {
-    setSort(e.target.value);
+  const handleSortProduct = (event: SelectChangeEvent) => {
+    setSort(event.target.value as string);
   };
 
   const handleShowFilter = () => {
@@ -74,8 +74,11 @@ const Products = () => {
         ? Number(searchParams.get("discount"))
         : undefined,
     };
+
     dispatch(getAllProducts({ category: categoryId, sort, ...newFilters }));
   }, [searchParams, categoryId, sort, page]);
+
+  // console.log(" store ", products)
   return (
     <div className="-z-10 mt-10">
       <div className="">
@@ -110,8 +113,7 @@ const Products = () => {
                 id="sort"
                 value={sort}
                 label="Sort"
-                onChange={handleSortProduct}
-              >
+                onChange={handleSortProduct}>
                 <MenuItem value={"price_low"}>Price : Low - High</MenuItem>
                 <MenuItem value={"price_high"}>Price : High - Low</MenuItem>
               </Select>
@@ -120,7 +122,8 @@ const Products = () => {
           <Divider />
 
           {products.products?.length > 0 ? (
-            <section className="grid sm:grid-cols-2 md:grid-cols-3 
+            <section
+              className="grid sm:grid-cols-2 md:grid-cols-3 
             lg:grid-cols-4
             gap-y-5 px-5 justify-center">
               {products.products.map((item: any) => (

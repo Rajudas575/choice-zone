@@ -8,7 +8,6 @@ import {
 } from "@mui/icons-material";
 import {
   Avatar,
-  Badge,
   Box,
   Button,
   Drawer,
@@ -21,7 +20,7 @@ import "./Navbar.css";
 import { mainCategory } from "../../data/Category/mainCategory";
 import CategorySheet from "./CategorySheet";
 import { useNavigate } from "react-router";
-import { useAppSelector } from "../../tempReduxToolkit/store";
+import { useAppSelector } from "../../Redux Toolkit/store";
 import DrawerList from "./DrawerList";
 
 const Navbar = () => {
@@ -143,9 +142,7 @@ const Navbar = () => {
           </div>
 
           {isLarge && (
-            <ul
-              className="flex it
-          ems-center font-medium text-gray-800 ">
+            <ul className="flex items-center font-medium text-gray-800 ">
               {mainCategory.map((item) => (
                 <li
                   key={item.categoryId}
