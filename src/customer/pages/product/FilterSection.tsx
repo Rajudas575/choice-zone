@@ -11,7 +11,7 @@ import { teal } from "@mui/material/colors";
 import React, { useState } from "react";
 import { colors } from "../../../data/filter/colors";
 import { price } from "../../../data/filter/price";
-import { discount } from "../../../data/Filter/discount";
+import { discount } from "../../../data/filter/discount";
 import { useSearchParams } from "react-router";
 
 const FilterSection = () => {
