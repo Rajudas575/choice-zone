@@ -19,7 +19,7 @@ import adminCouponReducer from "./features/admin/couponSlice";
 const rootReducer = combineReducers({
   auth: authReducer,
   user: userReducer,
-  product: productReducer,
+  products: productReducer,
   order: orderReducer,
   cart: cartReducer,
   coupon: couponReducer,
