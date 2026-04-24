@@ -257,7 +257,6 @@ export const homeCategories = [
     name: "Men Festive Wear",
     categoryId: "men_indian_and_festive_wear",
     section: "DEALS",
-    image:
-      "https://rukminim2.flixcart.com/image/612/612/xif0q/ethnic-set/o/n/o/l-02-langit-original-imah4jwwctkjtman.jpeg?q=70",
+    image: "https://m.media-amazon.com/images/I/71io1JXSOiL._SY606_.jpg",
   },
 ];

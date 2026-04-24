@@ -6,12 +6,17 @@ import {
   Grid,
   IconButton,
   InputLabel,
+  FormHelperText,
   MenuItem,
   Select,
   TextField,
+  Snackbar,
+  Alert,
 } from "@mui/material";
+import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
+import CloseIcon from "@mui/icons-material/Close";
 import { useFormik } from "formik";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { colors } from "../../data/filter/colors";
 import { mainCategory } from "../../data/Category/mainCategory";
 import { menLevelTwo } from "../../data/Category/LevelTwo/menLevelTwo";
@@ -23,11 +28,9 @@ import { womenLevelThree } from "../../data/Category/LevelThree/womenLevelThree"
 import { furnitureLevelThree } from "../../data/Category/LevelThree/furnitureLevelThree";
 import { electronicsLevelThree } from "../../data/Category/LevelThree/electronicsLevelThree";
 import { uploadToCloudnary } from "../../util/uploadToCloudnary";
-import { useAppDispatch } from "../../tempReduxToolkit/store";
+import { useAppDispatch, useAppSelector } from "../../tempReduxToolkit/store";
 import { createProduct } from "../../tempReduxToolkit/features/seller/sellerProductSlice";
 import { useNavigate } from "react-router-dom";
-
-const sizes = ["FREE", "XS", "S", "M", "L", "XL", "XXL", "3XL", "4XL", "5XL"];
 
 const categoryTwo: { [key: string]: any[] } = {
   men: menLevelTwo,
@@ -47,49 +50,61 @@ const categoryThree: { [key: string]: any[] } = {
   electronics: electronicsLevelThree,
 };
 
-const AddProducts = () => {
-  const [uploadImage, setuploadImage] = useState(false);
+interface AddProductFormProps {
+  initialValues?: any;
+  mode?: "add" | "edit";
+  onSubmit?: (values: any) => void;
+  onClose?: () => void;
+}
 
+const defaultInitialValues = {
+  title: "",
+  description: "",
+  mrpPrice: "",
+  sellingPrice: "",
+  quantity: 15,
+  color: "",
+  images: [],
+  category: "",
+  category2: "",
+  category3: "",
+  sizes: "",
+};
+
+const AddProductForm: React.FC<AddProductFormProps> = ({
+  initialValues = defaultInitialValues,
+  mode = "add",
+  onSubmit,
+  onClose,
+}) => {
+  const [uploadImage, setUploadingImage] = useState(false);
   const dispatch = useAppDispatch();
-  const navigate = useNavigate();
+  const sellerProduct = useAppSelector((store) => store.sellerProduct);
+  const [snackbarOpen, setOpenSnackbar] = useState(false);
+
   const formik = useFormik({
-    initialValues: {
-      title: "",
-      description: "",
-      mrpPrice: "",
-      sellingPrice: "",
-      quantity: 100,
-      color: "",
-      images: [],
-      category: "",
-      category2: "",
-      category3: "",
-      size: "",
-    },
-    onSubmit: async (value) => {
-      try {
-        const jwt = localStorage.getItem("jwt");
-
-        await dispatch(createProduct({ jwt, request: value })).unwrap();
-
-        // redirect if success
-        navigate("/seller/products");
-      } catch (error) {
-        console.log("Product create failed", error);
+    initialValues,
+    enableReinitialize: true,
+    onSubmit: (values) => {
+      if (onSubmit) {
+        console.log("Submitting Product:", values);
+        onSubmit(values);
+      } else {
+        dispatch(
+          createProduct({ request: values, jwt: localStorage.getItem("jwt") }),
+        );
       }
+      console.log(values);
     },
   });
 
-  const handleImageChang = async (event: any) => {
+  const handleImageChange = async (event: any) => {
     const file = event.target.files[0];
-
-    setuploadImage(true);
+    setUploadingImage(true);
     const image = await uploadToCloudnary(file);
-
+    // const image = URL.createObjectURL(file);
     formik.setFieldValue("images", [...formik.values.images, image]);
-    setuploadImage(false);
-
-    console.log("Handle image change");
+    setUploadingImage(false);
   };
 
   const handleRemoveImage = (index: number) => {
@@ -99,51 +114,67 @@ const AddProducts = () => {
   };
 
   const childCategory = (category: any, parentCategoryId: any) => {
-    return category.filter(
-      (child: any) => child.parentCategoryId === parentCategoryId,
-    );
+    return category.filter((child: any) => {
+      // console.log("Category", parentCategoryId, child)
+      return child.parentCategoryId == parentCategoryId;
+    });
   };
+
+  const handleCloseSnackbar = () => {
+    setOpenSnackbar(false);
+  };
+
+  useEffect(() => {
+    if (sellerProduct.productCreated || sellerProduct.error) {
+      setOpenSnackbar(true);
+    }
+  }, [sellerProduct.productCreated, sellerProduct.error]);
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-center py-5">ADD PRODUCTS</h1>
-      <form onSubmit={formik.handleSubmit}>
+      <form onSubmit={formik.handleSubmit} className="space-y-4 p-4">
         <Grid container spacing={2}>
           <Grid className="flex flex-wrap gap-5" size={{ xs: 12 }}>
             <input
               type="file"
-              accept="image/"
+              accept="image/*"
               id="fileInput"
               style={{ display: "none" }}
-              onChange={handleImageChang}
+              onChange={handleImageChange}
             />
-            <label htmlFor="fileInput" className="relative">
+
+            <label className="relative" htmlFor="fileInput">
               <span className="w-24 h-24 cursor-pointer flex items-center justify-center p-3 border rounded-md border-gray-400">
-                <AddPhotoAlternate className="text-gray-700" />
+                <AddPhotoAlternateIcon className="text-gray-700" />
               </span>
               {uploadImage && (
-                <div className="absolute flex justify-center items-center w-24 h-24 top-0 right-0 buttom-0 left-0">
+                <div className="absolute left-0 right-0 top-0 bottom-0 w-24 h-24 flex justify-center items-center">
                   <CircularProgress />
                 </div>
               )}
             </label>
+
             <div className="flex flex-wrap gap-2">
-              {formik.values.images.map((item, index) => (
+              {formik.values.images.map((image: any, index: any) => (
                 <div className="relative" key={index}>
-                  <img src={item} alt="" className="w-24 h-24 object-cover" />
+                  <img
+                    className="w-24 h-24 object-cover"
+                    key={index}
+                    src={image}
+                    alt={`ProductImage ${index + 1}`}
+                  />
                   <IconButton
                     onClick={() => handleRemoveImage(index)}
+                    className=""
                     size="small"
                     color="error"
                     sx={{
                       position: "absolute",
-                      top: 2,
-                      right: 2,
+                      top: 0,
+                      right: 0,
                       outline: "none",
-                      backgroundColor: "white",
-                      padding: "2px",
                     }}>
-                    <Close sx={{ fontSize: "1rem" }} />
+                    <CloseIcon sx={{ fontSize: "1rem" }} />
                   </IconButton>
                 </div>
               ))}
@@ -157,17 +188,24 @@ const AddProducts = () => {
               label="Title"
               value={formik.values.title}
               onChange={formik.handleChange}
+              error={formik.touched.title && Boolean(formik.errors.title)}
               required
             />
           </Grid>
           <Grid size={{ xs: 12 }}>
             <TextField
+              multiline
+              rows={4}
               fullWidth
               id="description"
               name="description"
               label="Description"
               value={formik.values.description}
               onChange={formik.handleChange}
+              error={
+                formik.touched.description && Boolean(formik.errors.description)
+              }
+              // helperText={formik.touched.description && formik.errors.description}
               required
             />
           </Grid>
@@ -177,142 +215,222 @@ const AddProducts = () => {
               id="mrp_price"
               name="mrpPrice"
               label="MRP Price"
+              type="number"
               value={formik.values.mrpPrice}
               onChange={formik.handleChange}
+              error={formik.touched.mrpPrice && Boolean(formik.errors.mrpPrice)}
+              // helperText={formik.touched.mrpPrice && formik.errors.mrpPrice}
               required
             />
           </Grid>
           <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
             <TextField
               fullWidth
-              id="selling_price"
+              id="sellingPrice"
               name="sellingPrice"
               label="Selling Price"
+              type="number"
               value={formik.values.sellingPrice}
               onChange={formik.handleChange}
+              error={
+                formik.touched.sellingPrice &&
+                Boolean(formik.errors.sellingPrice)
+              }
+              // helperText={
+              //   formik.touched.sellingPrice && formik.errors.sellingPrice
+              // }
               required
             />
           </Grid>
+
           <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
-            <FormControl fullWidth required>
+            <FormControl
+              fullWidth
+              error={formik.touched.color && Boolean(formik.errors.color)}
+              required>
               <InputLabel id="color-label">Color</InputLabel>
               <Select
                 labelId="color-label"
                 id="color"
                 name="color"
                 value={formik.values.color}
-                label="Color"
-                onChange={formik.handleChange}>
-                <MenuItem value="">None</MenuItem>
+                onChange={formik.handleChange}
+                label="Color">
+                <MenuItem value="">
+                  <em>None</em>
+                </MenuItem>
 
-                {colors.map((item, index) => (
-                  <MenuItem key={index} value={item.name}>
-                    {item.name}
+                {colors.map((color) => (
+                  <MenuItem value={color.name}>
+                    <div className="flex gap-3">
+                      <span
+                        style={{ backgroundColor: color.hex }}
+                        className={`h-5 w-5 rounded-full ${
+                          color.name === "White" ? "border" : ""
+                        }`}></span>
+                      <p>{color.name}</p>
+                    </div>
                   </MenuItem>
                 ))}
               </Select>
+              {formik.touched.color && formik.errors.color && (
+                <FormHelperText>
+                  {typeof formik.errors.color === "string"
+                    ? formik.errors.color
+                    : undefined}
+                </FormHelperText>
+              )}
             </FormControl>
           </Grid>
-
           <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
-            <FormControl fullWidth required>
-              <InputLabel id="size-label">Size</InputLabel>
+            <FormControl
+              fullWidth
+              error={formik.touched.sizes && Boolean(formik.errors.sizes)}
+              required>
+              <InputLabel id="sizes-label">Sizes</InputLabel>
               <Select
-                labelId="size-label"
-                id="size"
-                name="size"
-                value={formik.values.size}
-                label="size"
-                onChange={formik.handleChange}>
-                <MenuItem value="">None</MenuItem>
-
-                {sizes.map((item, index) => (
-                  <MenuItem key={index} value={item}>
-                    {item}
-                  </MenuItem>
-                ))}
+                labelId="sizes-label"
+                id="sizes"
+                name="sizes"
+                value={formik.values.sizes}
+                onChange={formik.handleChange}
+                label="Sizes">
+                <MenuItem value="">
+                  <em>None</em>
+                </MenuItem>
+                <MenuItem value="FREE">FREE</MenuItem>
+                <MenuItem value="S">S</MenuItem>
+                <MenuItem value="M">M</MenuItem>
+                <MenuItem value="L">L</MenuItem>
+                <MenuItem value="XL">XL</MenuItem>
               </Select>
             </FormControl>
           </Grid>
-          <Grid size={{ xs: 12, sm: 6, lg: 4 }}>
-            <FormControl fullWidth required>
-              <InputLabel id="category-label">Category</InputLabel>
-              <Select
-                labelId="category-label"
-                id="category"
-                name="category"
-                value={formik.values.category}
-                label="category"
-                onChange={formik.handleChange}>
-                <MenuItem value="none">None</MenuItem>
-
-                {mainCategory.map((item, index) => (
-                  <MenuItem key={index} value={item.categoryid}>
-                    {item.name}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid size={{ xs: 12, sm: 6, lg: 4 }}>
-            <FormControl fullWidth required>
-              <InputLabel id="category2-label">Second Category</InputLabel>
-              <Select
-                labelId="category2-label"
-                id="category2"
-                name="category2"
-                value={formik.values.category2}
-                label="second category"
-                onChange={formik.handleChange}>
-                <MenuItem value="">None</MenuItem>
-
-                {formik.values.category &&
-                  categoryTwo[formik.values.category]?.map((item, index) => (
-                    <MenuItem key={index} value={item.categoryId}>
-                      {item.name}
-                    </MenuItem>
+          {mode == "add" && (
+            <Grid size={{ xs: 12, sm: 6, lg: 4 }}>
+              <FormControl
+                fullWidth
+                error={
+                  formik.touched.category && Boolean(formik.errors.category)
+                }
+                required>
+                <InputLabel id="category-label">Category</InputLabel>
+                <Select
+                  labelId="category-label"
+                  id="category"
+                  name="category"
+                  value={formik.values.category}
+                  onChange={formik.handleChange}
+                  label="Category">
+                  {/* <MenuItem value=""><em>None</em></MenuItem> */}
+                  {mainCategory.map((item) => (
+                    <MenuItem value={item.categoryId}>{item.name}</MenuItem>
                   ))}
-              </Select>
-            </FormControl>
-          </Grid>
+                </Select>
+              </FormControl>
+            </Grid>
+          )}
 
-          <Grid size={{ xs: 12, sm: 6, lg: 4 }}>
-            <FormControl fullWidth required>
-              <InputLabel id="category3-label">Third Category</InputLabel>
-              <Select
-                labelId="category3-label"
-                id="category3"
-                name="category3"
-                value={formik.values.category3}
-                label="Third category"
-                onChange={formik.handleChange}>
-                <MenuItem value="">None</MenuItem>
-
-                {formik.values.category2 &&
-                  childCategory(
-                    categoryThree[formik.values.category],
-                    formik.values.category2,
-                  )?.map((item, index) => (
-                    <MenuItem key={index} value={item.categoryId}>
-                      {item.name}
-                    </MenuItem>
-                  ))}
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid size={{ xs: 12 }}>
+          {mode == "add" && (
+            <Grid size={{ xs: 12, sm: 6, lg: 4 }}>
+              <FormControl
+                fullWidth
+                error={
+                  formik.touched.category && Boolean(formik.errors.category)
+                }
+                required>
+                <InputLabel id="category2-label">Second Category</InputLabel>
+                <Select
+                  labelId="category2-label"
+                  id="category2"
+                  name="category2"
+                  value={formik.values.category2}
+                  onChange={formik.handleChange}
+                  label="Second Category">
+                  {formik.values.category &&
+                    categoryTwo[formik.values.category]?.map((item) => (
+                      <MenuItem value={item.categoryId}>{item.name}</MenuItem>
+                    ))}
+                </Select>
+              </FormControl>
+            </Grid>
+          )}
+          {mode == "add" && (
+            <Grid size={{ xs: 12, sm: 6, lg: 4 }}>
+              <FormControl
+                fullWidth
+                error={
+                  formik.touched.category && Boolean(formik.errors.category)
+                }
+                required>
+                <InputLabel id="category-label">Third Category</InputLabel>
+                <Select
+                  labelId="category-label"
+                  id="category"
+                  name="category3"
+                  value={formik.values.category3}
+                  onChange={formik.handleChange}
+                  label="Third Category">
+                  <MenuItem value="">
+                    <em>None</em>
+                  </MenuItem>
+                  {formik.values.category2 &&
+                    childCategory(
+                      categoryThree[formik.values.category],
+                      formik.values.category2,
+                    )?.map((item: any) => (
+                      <MenuItem value={item.categoryId}>{item.name}</MenuItem>
+                    ))}
+                </Select>
+              </FormControl>
+            </Grid>
+          )}
+          <Grid size={12}>
             <Button
               sx={{ p: "14px" }}
+              color="primary"
+              variant="contained"
               fullWidth
               type="submit"
-              variant="contained">
-              Add Product
+              disabled={sellerProduct.loading}>
+              {sellerProduct.loading ? (
+                <CircularProgress
+                  size="small"
+                  sx={{ width: "27px", height: "27px" }}
+                />
+              ) : mode === "edit" ? (
+                "Update Product"
+              ) : (
+                "Add Product"
+              )}
             </Button>
           </Grid>
+          {onClose && (
+            <Grid size={12}>
+              <Button onClick={onClose} color="secondary" fullWidth>
+                Cancel
+              </Button>
+            </Grid>
+          )}
         </Grid>
       </form>
+      <Snackbar
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}>
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={sellerProduct.error ? "error" : "success"}
+          variant="filled"
+          sx={{ width: "100%" }}>
+          {sellerProduct.error
+            ? sellerProduct.error
+            : "Product created successfully"}
+        </Alert>
+      </Snackbar>
     </div>
   );
 };
 
-export default AddProducts;
+export default AddProductForm;
